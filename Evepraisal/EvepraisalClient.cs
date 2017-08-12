@@ -24,7 +24,7 @@ namespace Evepraisal
         public async Task<Appraisal> AppraiseAsync(string rawText, Market market)
         {
             var content = new StringContent(BuildRequest(rawText, market));
-            content.Headers.ContentType = new MediaTypeHeaderValue($"multipart/form-data; boundary={_boundary}");
+            content.Headers.TryAddWithoutValidation("Content-Type", $"multipart/form-data; boundary={_boundary}");
             var response = await _client.PostAsync("appraisal", content).ConfigureAwait(false);
             var appId = response.Headers.GetValues("x-appraisal-id").FirstOrDefault();
             var jsonResponse = await _client.GetStringAsync($"a/{appId}.json").ConfigureAwait(false);

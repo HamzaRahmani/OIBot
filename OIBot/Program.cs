@@ -82,7 +82,7 @@ namespace OIBot
             if (!arg.Content.StartsWith("!"))
                 return;
 
-            var args = arg.Content.Substring(1, arg.Content.Length - 1).Split(' ');
+            var args = arg.Content.Substring(1, arg.Content.Length - 1).Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             if (args.Length == 0)
                 return;
 
@@ -126,15 +126,20 @@ namespace OIBot
 
         private static Task SendAppraisalAsync(ISocketMessageChannel channel, Appraisal appraisal)
         {
+            var itemCount = appraisal.Items.Sum(i => i.Quantity);
+
+            var summary = appraisal.Items.Length < 5 ? string.Join(", ", appraisal.Items.Select(x => $"{x.Name} x{x.Quantity}")) : $"{itemCount} items";
+
             var embed = new EmbedBuilder
             {
-                Author = new EmbedAuthorBuilder().WithName($"Total worth: {appraisal.Totals.Buy} buy, {appraisal.Totals.Sell} sell")
+                Author = new EmbedAuthorBuilder().WithName($"{appraisal.Kind} Appraisal - {summary} (link)").WithUrl(Evepraisal.GetAppraisalLink(appraisal.Id)),
+                Fields = new List<EmbedFieldBuilder>
+                {
+                    new EmbedFieldBuilder().WithName("Sell Value").WithValue($"{appraisal.Totals.Sell:C} ISK").WithIsInline(true),
+                    new EmbedFieldBuilder().WithName("Buy Value").WithValue($"{appraisal.Totals.Buy:C} ISK").WithIsInline(true),
+                    new EmbedFieldBuilder().WithName("Market").WithValue(appraisal.Market),
+                }
             };
-
-            foreach (var item in appraisal.Items)
-            {
-                embed.Fields.Add(new EmbedFieldBuilder().WithName($"{item.TypeName} x{item.Quantity}").WithValue($"Buy: {item.Prices.Buy.Average} Sell: {item.Prices.Sell.Average}"));
-            }
 
             return channel.SendMessageAsync("", embed: embed.Build());
         }

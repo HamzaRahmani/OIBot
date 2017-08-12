@@ -18,31 +18,30 @@ namespace Evepraisal
             _client = new HttpClient
             {
                 BaseAddress = new Uri(baseUrl),
+                DefaultRequestHeaders = { UserAgent = { new ProductInfoHeaderValue("OIBot", "1.0")}}
             };
+        }
+
+        public string GetAppraisalLink(string appraisalId)
+        {
+            return $"{_client.BaseAddress}a/{appraisalId}";
         }
 
         public async Task<Appraisal> AppraiseAsync(string rawText, Market market)
         {
-            var content = new StringContent(BuildRequest(rawText, market));
-            content.Headers.TryAddWithoutValidation("Content-Type", $"multipart/form-data; boundary={_boundary}");
+            var rawTextData = new StringContent(rawText);
+            rawTextData.Headers.ContentDisposition = ContentDispositionHeaderValue.Parse("form-data; name=\"raw_textarea\"");
+            var marketData = new StringContent(market.ToString().ToLower());
+            marketData.Headers.ContentDisposition = ContentDispositionHeaderValue.Parse("form-data; name=\"market\"");
+            var content = new MultipartFormDataContent(_boundary)
+            {
+                rawTextData,
+                marketData
+            };
             var response = await _client.PostAsync("appraisal", content).ConfigureAwait(false);
             var appId = response.Headers.GetValues("x-appraisal-id").FirstOrDefault();
             var jsonResponse = await _client.GetStringAsync($"a/{appId}.json").ConfigureAwait(false);
             return JsonConvert.DeserializeObject<Appraisal>(jsonResponse);
-        }
-
-        private string BuildRequest(string rawText, Market market)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine(_boundary);
-            sb.AppendLine("Content-Disposition: form-data; name=\"raw_textarea\"").AppendLine();
-            sb.AppendLine(rawText);
-            sb.AppendLine(_boundary);
-            sb.AppendLine("Content-Disposition: form-data; name=\"market\"").AppendLine();
-            sb.AppendLine(market.ToString().ToLower());
-            sb.Append($"{_boundary}--");
-
-            return sb.ToString();
         }
     }
 
@@ -51,7 +50,15 @@ namespace Evepraisal
         Jita,
         Amarr,
         Dodixie,
-        Hek
+        Hek,
+        Universe
+    }
+
+    public enum Kind
+    {
+        Eft,
+        Listing,
+        Assets
     }
 
     public class Appraisal
@@ -60,11 +67,19 @@ namespace Evepraisal
         public string Id { get; set; }
 
         [JsonProperty("created")]
-        public DateTime Created { get; set; }
+        public string Created { get; set; }
+
+        [JsonIgnore]
+        public Kind Kind { get; set; }
 
         [JsonProperty("kind")]
-        public string Kind { get; set; }
+        public string KindName
+        {
+            get => Kind.ToString().ToLower();
+            set => Kind = (Kind)Enum.Parse(typeof(Kind), value, true);
+        }
 
+        [JsonIgnore]
         public Market Market { get; set; }
 
         [JsonProperty("market_name")]
@@ -82,9 +97,6 @@ namespace Evepraisal
 
         [JsonProperty("raw")]
         public string Raw { get; set; }
-
-        [JsonProperty("unparsed")]
-        public string Unparsed { get; set; }
 
         [JsonProperty("user")]
         public string User { get; set; }

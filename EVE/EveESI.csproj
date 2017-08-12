@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.3.0-beta3-build3705" />
+    <PackageReference Include="xunit.runner.console" Version="2.3.0-beta3-build3705" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta3-build3705" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.3.0-beta3-build3705" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta3-build3705" />
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.0-beta3-build3705" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Scopes.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Scopes.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Scopes.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Scopes.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>

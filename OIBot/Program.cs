@@ -107,7 +107,7 @@ namespace OIBot
                         await SendCharacterInfo(arg.Channel, result.Characters.FirstOrDefault().ToString()).ConfigureAwait(false);
                         break;
                     case "appraise":
-                        var rawText = arg.Content.Split(new[] {"```"}, StringSplitOptions.RemoveEmptyEntries)[1];
+                        var rawText = string.Join(" ", args.Skip(1));
                         var appraisal = await Evepraisal.AppraiseAsync(rawText, Market.Jita).ConfigureAwait(false);
                         await SendAppraisalAsync(arg.Channel, appraisal).ConfigureAwait(false);
                         break;
